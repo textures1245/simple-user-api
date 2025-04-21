@@ -1,0 +1,39 @@
+{
+  "name": "simple-user-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc --build --force",
+    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/api/index.js",
+    "dev": "nodemon",
+    "lint": "eslint --fix ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/mongoose": "^5.11.96",
+    "@types/node": "^22.14.1",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "concurrently": "^9.1.2",
+    "dotenv": "^16.5.0",
+    "express": "^4.18.2",
+    "inversify": "^6.2.2",
+    "inversify-express-utils": "^6.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.13.2",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "reflect-metadata": "^0.2.2",
+    "uuid": "^11.1.0"
+  }
+}

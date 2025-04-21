@@ -1,0 +1,51 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "baseUrl": "src",
+    "outDir": "dist",
+    // Enable latest features
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
+    "moduleDetection": "force",
+    "allowJs": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+
+    // Bundler mode
+    // "allowImportingTsExtensions": true,
+    "declaration": true,
+    "noEmit": false,
+
+    // Best practices
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "experimentalDecorators": true,
+
+    // Some stricter flags
+    "noUnusedLocals": false,
+    "noUnusedParameters": true,
+    "noPropertyAccessFromIndexSignature": true,
+    /* Language and Environment */
+
+    /* Modules */
+
+    "paths": {
+      "@/*": ["./*"],
+      "@domain/*": ["./domain/*"],
+      "@infrastructure/*": ["./infrastructure/*"],
+      "@interface/*": ["./interface/*"],
+      "@application/*": ["./application/*"],
+      "@api/*": ["./api/*"],
+      "@config/*": ["./config/*"]
+    },
+
+    /* Emit */
+    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
+    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */
+  },
+
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}

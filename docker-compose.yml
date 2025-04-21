@@ -1,0 +1,11 @@
+version: '3.9'
+services:
+  mongodb:
+    container_name: simple-user-api-mongodb
+    image: mongo:4.4
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+networks:
+  default:
+    name: simple-user-api-net
