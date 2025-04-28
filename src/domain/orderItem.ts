@@ -20,16 +20,6 @@ const OrderItemSchema = new Schema<IOrderItemProps, IOrderItemModel>(
   }
 );
 
-OrderItemSchema.methods["unitPrice"] = async function (): Promise<number> {
-  if (this["populated"]("product")) {
-    // if it populated then return exist value
-    return this["product"].price;
-  }
-
-  await this["populated"]("product");
-  return this["product"].price;
-};
-
 OrderItemSchema.virtual("subtotal").get(function () {
   // Check if productId is populated and has price
   if (
@@ -44,12 +34,6 @@ OrderItemSchema.virtual("subtotal").get(function () {
   return 0; // Default if not populated
 });
 
-OrderItemSchema.statics["findByProductId"] = async function (
-  productId: string
-): Promise<IOrderItem[]> {
-  return this.find({ productId });
-};
-
 OrderItemSchema.statics["expenseProductQuantity"] = async function (
   productId: string,
   quantity: number
@@ -60,18 +44,21 @@ OrderItemSchema.statics["expenseProductQuantity"] = async function (
     throw new Error(`Product with ID ${productId} not found`);
   }
 
-  // Check if enough stock is available
   if (product.stackQuanity < quantity) {
     throw new Error(
       `Not enough stock for product ${product.name}. Available: ${product.stackQuanity}, Requested: ${quantity}`
     );
   }
 
-  // Update the product's stock quantity by subtracting the ordered quantity
   product.stackQuanity -= quantity;
 
-  // Save the updated product
   await product.save();
+};
+
+OrderItemSchema.statics["findByProductId"] = async function (
+  productId: string
+): Promise<IOrderItem[]> {
+  return this.find({ productId });
 };
 
 export const OrderItemModel = model<IOrderItemProps, IOrderItemModel>(

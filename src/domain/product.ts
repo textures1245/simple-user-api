@@ -18,7 +18,8 @@ export class Product extends DomainEvent implements IProduct {
     name: string,
     description: string,
     price: number,
-    stackQuanity: number
+    stackQuanity: number,
+    imageUrl: string = "https://i0.wp.com/vat.or.th/wp-content/uploads/2021/03/placeholder.png?ssl=1"
   ) {
     super(aggregateId);
     this.name = name;
@@ -26,7 +27,9 @@ export class Product extends DomainEvent implements IProduct {
     this.price = price;
 
     this.stackQuanity = stackQuanity;
+    this.imageUrl = imageUrl;
   }
+  imageUrl: string;
 }
 
 const ProductSchema = new Schema<Product>(
@@ -42,6 +45,7 @@ const ProductSchema = new Schema<Product>(
     description: { type: String, required: true },
     price: { type: Number, required: true },
     stackQuanity: { type: Number, required: true },
+    imageUrl: { type: String, required: true },
   },
   { timestamps: true }
 );
