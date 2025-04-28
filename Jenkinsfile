@@ -5,8 +5,8 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('9c279da9-7de8-424f-8407-61975581cd85')
         GIT_BRANCH = 'main'
-        APP_IMAGE = 'textures1245/simple-user-api'
-        IMAGE_TAG = "v1"
+        APP_IMAGE = 'simple-user-api-app'
+        IMAGE_TAG = 'v1'
         GIT_REPO = 'https://github.com/textures1245/simple-user-api.git'
     }
 
