@@ -15,6 +15,7 @@ import { msg, ok } from "../processor/resp";
 
 import { OrderInventoryService } from "../../../../application/features/order-inventory/order-inventory-service";
 import { IOrderItem } from "@/interface/IOrderItem";
+import authMiddleware from "../middleware/authorization";
 
 @controller("/api/v1/order")
 export class OrderInventoryController {
@@ -24,7 +25,7 @@ export class OrderInventoryController {
     private readonly _orderInventory: OrderInventoryService
   ) {}
 
-  @httpGet("")
+  @httpGet("", authMiddleware)
   async getAllOrdersWithItem(
     @request() _req: Request,
     @response() resp: Response
@@ -34,7 +35,7 @@ export class OrderInventoryController {
     return resp.status(200).json(ok("Orders fetched successfully", orders));
   }
 
-  @httpGet("/:id")
+  @httpGet("/:id", authMiddleware)
   async getProductById(@request() req: Request, @response() resp: Response) {
     const { id } = req.params;
     const product = await this._orderInventory.getOrderWithItems(id);
@@ -45,7 +46,7 @@ export class OrderInventoryController {
     return resp.status(200).json(ok("Product fetched successfully", product));
   }
 
-  @httpPost("")
+  @httpPost("", authMiddleware)
   async createOrderWithItems(
     @request() req: Request,
     @response() resp: Response
@@ -59,15 +60,17 @@ export class OrderInventoryController {
       })}`
     );
 
-    const cmdRes = await this._orderInventory.createOrderWithItems(
-      userId,
-      items
-    );
+    const cmdRes = await this._orderInventory
+      .createOrderWithItems(userId, items)
+      .catch((err) => {
+        this._logger.error(`Error creating order: ${err.message}`);
+        return resp.status(500).json(msg(err.message, "500"));
+      });
 
     return resp.status(201).json(ok("Product created successfully", cmdRes));
   }
 
-  @httpDelete("")
+  @httpDelete("", authMiddleware)
   async deleteAllOrders(@request() _req: Request, @response() resp: Response) {
     this._logger.info(`received delete all orders request`);
 
@@ -76,7 +79,7 @@ export class OrderInventoryController {
     return resp.status(200).json(ok("All orders deleted successfully", cmdRes));
   }
 
-  @httpDelete("/:id")
+  @httpDelete("/:id", authMiddleware)
   async deleteOrder(@request() req: Request, @response() resp: Response) {
     const { id } = req.params;
 

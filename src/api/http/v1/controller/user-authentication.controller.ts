@@ -17,6 +17,7 @@ import { AuthenticationService } from "../../../../application/features/authenti
 import { UserManagementService } from "@/application/features/user-management/user-management-service";
 import { IUser } from "@/interface/IUser";
 import { Gender } from "@/interface/IUser";
+import authMiddleware from "../middleware/authorization";
 
 @controller("/api/v1/user")
 export class UserAuthenticationController {
@@ -33,6 +34,17 @@ export class UserAuthenticationController {
     const users = await this._userManagementService.repository.getAll();
     this._logger.info(`get all users request ${JSON.stringify(users)}`);
     return resp.status(200).json(ok("Users fetched successfully", users));
+  }
+
+  @httpGet("/validate", authMiddleware)
+  async validateUser(@request() req: Request, @response() resp: Response) {
+    const { user } = req;
+
+    if (!user) {
+      return resp.status(401).json(msg("User not found", "401"));
+    }
+
+    return resp.status(200).json(ok("User validated successfully", user));
   }
 
   @httpPost("/register")

@@ -44,14 +44,15 @@ export class ProductInventoryController {
 
   @httpPost("")
   async createProduct(@request() req: Request, @response() resp: Response) {
-    const { name, description, price, stock } = req.body;
+    const { name, description, price, stackQuanity, imageUrl } = req.body;
 
     this._logger.info(
       `received create product request: ${JSON.stringify({
         name,
         description,
         price,
-        stock,
+        stackQuanity,
+        imageUrl
       })}`
     );
 
@@ -59,7 +60,8 @@ export class ProductInventoryController {
       name,
       description,
       price,
-      stock
+      stackQuanity,
+      imageUrl
     );
 
     return resp.status(201).json(ok("Product created successfully", cmdRes));
@@ -68,13 +70,18 @@ export class ProductInventoryController {
   @httpPatch("/:id")
   async updateProduct(@request() req: Request, @response() resp: Response) {
     const { id } = req.params;
-    const { name, description, price, stackQuanity }: Partial<IProduct> =
-      req.body;
+    const {
+      name,
+      description,
+      price,
+      stackQuanity,
+      imageUrl,
+    }: Partial<IProduct> = req.body;
 
     this._logger.info(
       `received update product request: ${JSON.stringify({
         id,
-        productUpdates: { name, description, price, stackQuanity },
+        productUpdates: { name, description, price, stackQuanity, imageUrl },
       })}`
     );
 
@@ -83,6 +90,7 @@ export class ProductInventoryController {
       description,
       price,
       stackQuanity,
+      imageUrl,
     });
 
     return resp.status(200).json(ok("Product updated successfully", cmdRes));
