@@ -1,4 +1,3 @@
-/* groovylint-disable NestedBlockDepth */
 pipeline {
     agent any
 
@@ -6,7 +5,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('9c279da9-7de8-424f-8407-61975581cd85')
         GIT_BRANCH = 'main'
         APP_IMAGE = 'simple-user-api-app'
-        IMAGE_TAG = 'v1'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
         GIT_REPO = 'https://github.com/textures1245/simple-user-api.git'
     }
 
@@ -24,27 +23,24 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout([$class: 'GitSCM',
-            branches: [[name: "${GIT_BRANCH}"]],
-            userRemoteConfigs: [[url: "${GIT_REPO}"]]
-        ])
+                    branches: [[name: "${GIT_BRANCH}"]],
+                    userRemoteConfigs: [[url: "${GIT_REPO}"]]
+                ])
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build(APP_IMAGE, '--build-arg BUILD_NUMBER=${env.BUILD_NUMBER} .')
-                }
+                sh "docker build -t ${APP_IMAGE}:${IMAGE_TAG} --build-arg BUILD_NUMBER=${env.BUILD_NUMBER} ."
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v2/', DOCKERHUB_CREDENTIALS) {
-                        docker.image("${APP_IMAGE}:${IMAGE_TAG}").push()
-                    }
-                }
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                sh "docker tag ${APP_IMAGE}:${IMAGE_TAG} ${DOCKERHUB_CREDENTIALS_USR}/${APP_IMAGE}:${IMAGE_TAG}"
+                sh "docker push ${DOCKERHUB_CREDENTIALS_USR}/${APP_IMAGE}:${IMAGE_TAG}"
+                sh 'docker logout'
             }
         }
     }
@@ -52,8 +48,11 @@ pipeline {
     post {
         always {
             script {
-                sh 'docker rmi -f ${APP_IMAGE}:${IMAGE_TAG}'
-                junit '**/test-results/*.xml'
+                sh "docker rmi -f ${APP_IMAGE}:${IMAGE_TAG} || true"
+                sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${APP_IMAGE}:${IMAGE_TAG} || true"
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    junit allowEmptyResults: true, testResults: '**/test-results/*.xml'
+                }
             }
         }
         success {
