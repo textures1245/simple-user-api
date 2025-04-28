@@ -6,7 +6,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('9c279da9-7de8-424f-8407-61975581cd85')
         GIT_BRANCH = 'main'
         APP_IMAGE = 'textures1245/simple-user-api'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        IMAGE_TAG = "v1"
         GIT_REPO = 'https://github.com/textures1245/simple-user-api.git'
     }
 
@@ -17,16 +17,16 @@ pipeline {
                     if (DOCKERHUB_CREDENTIALS == null) {
                         error('Docker Hub credentials not found.')
                     }
-
                 }
             }
         }
 
         stage('Checkout') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: "${GIT_BRANCH}"]],
-                    userRemoteConfigs: [[url: '${GIT_REPO}']])
-                ])
+                checkout([$class: 'GitSCM',
+            branches: [[name: "${GIT_BRANCH}"]],
+            userRemoteConfigs: [[url: "${GIT_REPO}"]]
+        ])
             }
         }
 
@@ -38,7 +38,7 @@ pipeline {
             }
         }
 
-       stage('Push Docker Image') {
+        stage('Push Docker Image') {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v2/', DOCKERHUB_CREDENTIALS) {
