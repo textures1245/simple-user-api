@@ -5,7 +5,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('9c279da9-7de8-424f-8407-61975581cd85')
         GIT_BRANCH = 'main'
         APP_IMAGE = 'simple-user-api-app'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        IMAGE_TAG = "app-v1-id-${env.BUILD_NUMBER}"
         GIT_REPO = 'https://github.com/textures1245/simple-user-api.git'
     }
 
@@ -51,7 +51,7 @@ pipeline {
                 sh "docker rmi -f ${APP_IMAGE}:${IMAGE_TAG} || true"
                 sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${APP_IMAGE}:${IMAGE_TAG} || true"
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    junit allowEmptyResults: true, testResults: '**/test-results/*.xml'
+                junit allowEmptyResults: true, testResults: '**/test-results/*.xml'
                 }
             }
         }
