@@ -32,8 +32,9 @@ export class ProductInventoryService implements IProductInventoryService {
     name: string,
     description: string,
     price: number,
-    stackQuanity: number
-  ): Promise<void> {
+    stackQuanity: number,
+    imageUrl: string
+  ): Promise<Document & Product> {
     this._logger.info(`Creating product: ${name}`);
 
     const aggregateId = uuidv4(); // Generate a unique ID
@@ -44,12 +45,15 @@ export class ProductInventoryService implements IProductInventoryService {
       name,
       description,
       price,
-      stackQuanity
+      stackQuanity,
+      imageUrl
     );
 
-    await this._productModel.create(product as Document & Product);
+    const productCreate = await this._productModel.create(
+      product as Document & Product
+    );
 
-    return;
+    return productCreate;
   }
 
   async updateProduct(id: string, prod: Partial<IProduct>): Promise<void> {

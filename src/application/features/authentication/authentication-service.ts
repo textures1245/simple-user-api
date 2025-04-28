@@ -7,101 +7,112 @@ import { User } from "@domain/user";
 import { Document } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrpyt from "bcrypt";
-import { IUser } from "@/interface/IUser";
+import { IUser, UserPayload } from "@/interface/IUser";
 import { v4 } from "uuid";
-import config from '@config/index'
-
+import config from "@config/index";
 
 @injectable()
 export class AuthenticationService implements IAuthenticationHandler {
-
   constructor(
     @inject(TYPES.Logger) private readonly _logger: Logger,
     @inject(TYPES.UserModel)
     private readonly _userModel: Inventory<Document & User>
-  ) {
-    
-  }
-  register(req: IUser): Promise<void> {
-    return new Promise<void>(async (resolve, reject) => {
-      try {
-        const existingUser = await this._userModel._model.findOne({
-          username: req.username,
-        });
-
-        if (existingUser) {
-          this._logger.warn(`User already exists: ${req.username}`);
-          return reject(new Error("User already exists"));
-        }
-
-        const hashedPassword = await new Promise<string>((resolve, reject) => {
-          bcrpyt.hash(req.password, 10, (err, hash) => {
-            if (err) {
-              reject(err);
-            }
-            resolve(hash);
+  ) {}
+  register(req: IUser): Promise<{ token: string; user: Document & User }> {
+    return new Promise<{ token: string; user: Document & User }>(
+      async (resolve, reject) => {
+        try {
+          const existingUser = await this._userModel._model.findOne({
+            username: req.username,
           });
-        });
 
-        const aggregateId = v4(); // Generate a unique ID
+          if (existingUser) {
+            this._logger.warn(`User already exists: ${req.username}`);
+            return reject(new Error("User already exists"));
+          }
 
-        const user = new User(
-          aggregateId,
-          req.username,
-          hashedPassword,
-          req.firstName,
-          req.lastName,
-          req.age,
-          req.gender
-        );
+          const hashedPassword = await new Promise<string>(
+            (resolve, reject) => {
+              bcrpyt.hash(req.password, 10, (err, hash) => {
+                if (err) {
+                  reject(err);
+                }
+                resolve(hash);
+              });
+            }
+          );
 
-        await this._userModel.create(user as Document & User);
+          const aggregateId = v4(); // Generate a unique ID
 
-        this._logger.info(`User registered: ${req.username}`);
-        resolve();
-      } catch (error) {
-        this._logger.error("Registration error", error);
-        reject(error);
+          const user = new User(
+            aggregateId,
+            req.username,
+            hashedPassword,
+            req.firstName,
+            req.lastName,
+            req.age,
+            req.gender
+          );
+
+          const createdUser = await this._userModel.create(
+            user as Document & User
+          );
+
+          this._logger.info(`User registered: ${req.username}`);
+          resolve({
+            token: this.generateToken(createdUser),
+            user: createdUser,
+          });
+        } catch (error) {
+          this._logger.error("Registration error", error);
+          reject(error);
+        }
       }
-    });
+    );
   }
 
   async authenticate(
     username: string,
     password: string
-  ): Promise<{ token: string }> {
-    return new Promise<{ token: string }>(async (resolve, reject) => {
-      const user = await this._userModel._model.findOne({
-        username,
-      });
-
-      if (!user) {
-        this._logger.warn(`User not found: ${username}`);
-        return reject(new Error("Invalid credentials"));
-      }
-
-      const isMatch = await new Promise<boolean>((resolve, reject) => {
-        bcrpyt.compare(password, user.password, (err, result) => {
-          if (err) {
-            reject(err);
-          }
-          resolve(result);
+  ): Promise<{ token: string; user: Document & User }> {
+    return new Promise<{ token: string; user: Document & User }>(
+      async (resolve, reject) => {
+        const user = await this._userModel._model.findOne({
+          username,
         });
-      });
 
-      if (!isMatch) {
-        this._logger.warn(`Password mismatch for user: ${username}`);
-        return reject(new Error("Invalid credentials"));
+        if (!user) {
+          this._logger.warn(`User not found: ${username}`);
+          return reject(new Error("Invalid credentials"));
+        }
+
+        const isMatch = await new Promise<boolean>((resolve, reject) => {
+          bcrpyt.compare(password, user.password, (err, result) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(result);
+          });
+        });
+
+        if (!isMatch) {
+          this._logger.warn(`Password mismatch for user: ${username}`);
+          return reject(new Error("Invalid credentials"));
+        }
+
+        resolve({ token: this.generateToken(user), user: user });
       }
-
-      resolve({ token: this.generateToken(user) });
-    });
+    );
   }
 
   private generateToken(user: Document & User): string {
-    const payload = {
+    const payload: UserPayload = {
       id: user.id,
       username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      age: user.age,
+      gender: user.gender,
     };
 
     const token = jwt.sign(
