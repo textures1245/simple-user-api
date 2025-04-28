@@ -51,9 +51,9 @@ export const infraInitialize = async () => {
   container
     .bind<Inventory<Document & typeof ProductModel>>(TYPES.ProductModel)
     .toConstantValue(productInventory);
-    container
-      .bind<Inventory<Document & typeof OrderItemModel>>(TYPES.OrderItemModel)
-      .toConstantValue(orderItemState);
+  container
+    .bind<Inventory<Document & typeof OrderItemModel>>(TYPES.OrderItemModel)
+    .toConstantValue(orderItemState);
   container
     .bind<Inventory<Document & typeof OrderModel>>(TYPES.OrderModel)
     .toConstantValue(orderInventory);
@@ -75,7 +75,6 @@ export const infraInitialize = async () => {
     .bind<AuthenticationService>(TYPES.AuthenticationService)
     .to(AuthenticationService);
 
-
   // Create server
   const server = new InversifyExpressServer(container);
 
@@ -94,7 +93,7 @@ export const infraInitialize = async () => {
       );
       res.header(
         "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS"
+        "GET, POST, PUT, DELETE, PATCH, OPTIONS"
       );
       next();
     });

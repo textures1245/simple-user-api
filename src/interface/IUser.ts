@@ -8,3 +8,12 @@ export interface IUser {
   age: number;
   gender: Gender;
 }
+
+export interface UserPayload {
+  id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  age: number;
+  gender: string;
+}
