@@ -1,20 +1,42 @@
-# Use Node.js LTS version as base image
+# Build stage
+FROM node:22-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies including dev dependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build TypeScript project
+RUN npm run build
+
+# Production stage
 FROM node:22-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install only production dependencies
+RUN npm install --production
 
-# Copy the rest of the application
-COPY . .
+# Copy built files from builder stage
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
-# Expose the port the app runs on
+# Copy environment file if it exists (optional)
+COPY .env* ./
+
+# Expose API port
 EXPOSE 3000
 
-# Command to run the application
-CMD ["node", "dist/api/index.js"]
+# Start the application using npm script (respects path aliases)
+CMD ["npm", "start"]
