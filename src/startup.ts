@@ -20,6 +20,7 @@ import { OrderItemModel } from "./domain/orderItem";
 import { OrderInventoryService } from "./application/features/order-inventory/order-inventory-service";
 import { UserManagementService } from "./application/features/user-management/user-management-service";
 import { AuthenticationService } from "./application/features/authentication/authentication-service";
+import { RequestMiddleware } from "./api/http/v1/middleware/request";
 
 export const infraInitialize = async () => {
   const container = new Container();
@@ -78,11 +79,17 @@ export const infraInitialize = async () => {
   // Create server
   const server = new InversifyExpressServer(container);
 
-  // Configure server
+  // middleware setup
+  const requestMiddleware = new RequestMiddleware(
+    container.get<pino.Logger>(TYPES.Logger)
+  );
+
   server.setConfig((app) => {
     // Middleware
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+
+    app.use(requestMiddleware.requestInfo.bind(requestMiddleware));
 
     // CORS handling
     app.use((_req, res, next) => {
